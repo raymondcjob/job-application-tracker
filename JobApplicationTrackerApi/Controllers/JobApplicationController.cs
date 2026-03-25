@@ -18,7 +18,9 @@ public class JobApplicationsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<JobApplicationResponseDto>> Create(CreateJobApplicationDto dto)
     {
-        throw new NotImplementedException();
+        var createdJobApplication = await _jobApplicationService.CreateAsync(dto);
+
+        return CreatedAtAction(nameof(GetById), new { id = createdJobApplication.Id }, createdJobApplication);
     }
 
     [HttpGet]
