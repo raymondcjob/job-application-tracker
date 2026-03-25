@@ -58,6 +58,11 @@ public class JobApplicationService : IJobApplicationService
                 .Where(jobApplication => jobApplication.CompanyName.ToLower().Contains(companyName));
         }
 
+        jobApplicationsQuery = queryDto.SortByDateDescending
+        ? jobApplicationsQuery.OrderByDescending(jobApplication => jobApplication.DateApplied)
+        : jobApplicationsQuery.OrderBy(jobApplication => jobApplication.DateApplied);
+
+
         var jobApplications = await jobApplicationsQuery
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
