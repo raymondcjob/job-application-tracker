@@ -18,7 +18,14 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
-        throw new NotImplementedException();
+        var result = await _authService.RegisterAsync(dto);
+
+        if (result == null)
+        {
+            return BadRequest(new { message = "email is already registered" });
+        }
+
+        return Ok(result);
     }
 
     [HttpPost("login")]
