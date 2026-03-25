@@ -34,7 +34,14 @@ public class JobApplicationsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<JobApplicationResponseDto>> GetById(int id)
     {
-        throw new NotImplementedException();
+        var jobApplication = await _jobApplicationService.GetByIdAsync(id);
+
+        if (jobApplication == null)
+        {
+            return NotFound(new { message = $"job application with id {id} not found" });
+        }
+
+        return Ok(jobApplication);
     }
 
     [HttpPut("{id}")]

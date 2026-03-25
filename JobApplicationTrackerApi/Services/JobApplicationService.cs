@@ -80,9 +80,22 @@ public class JobApplicationService : IJobApplicationService
         return jobApplications;
     }
 
-    public Task<JobApplicationResponseDto?> GetByIdAsync(int id)
+    public async Task<JobApplicationResponseDto?> GetByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        var jobApplication = await _context.JobApplications
+            .Where(jobApplication => jobApplication.Id == id)
+            .Select(jobApplication => new JobApplicationResponseDto
+            {
+                Id = jobApplication.Id,
+                CompanyName = jobApplication.CompanyName,
+                Position = jobApplication.Position,
+                Status = jobApplication.Status,
+                DateApplied = jobApplication.DateApplied,
+                Notes = jobApplication.Notes
+            })
+            .FirstOrDefaultAsync();
+
+        return jobApplication;
     }
 
     public Task<JobApplicationResponseDto?> UpdateAsync(int id, UpdateJobApplicationDto dto)
