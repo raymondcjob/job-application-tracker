@@ -16,7 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
-
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
