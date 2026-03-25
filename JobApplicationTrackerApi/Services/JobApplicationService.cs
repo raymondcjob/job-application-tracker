@@ -45,7 +45,12 @@ public class JobApplicationService : IJobApplicationService
 
     public async Task<IEnumerable<JobApplicationResponseDto>> GetAllAsync(JobApplicationQueryDto queryDto)
     {
+        var pageNumber = queryDto.PageNumber < 1 ? 1 : queryDto.PageNumber;
+        var pageSize = queryDto.PageSize < 1 ? 10 : queryDto.PageSize;
+
         var jobApplications = await _context.JobApplications
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(jobApplication => new JobApplicationResponseDto
             {
                 Id = jobApplication.Id,
