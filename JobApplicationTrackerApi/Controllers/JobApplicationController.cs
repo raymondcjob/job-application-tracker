@@ -60,6 +60,13 @@ public class JobApplicationsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        throw new NotImplementedException();
+        var deleted = await _jobApplicationService.DeleteAsync(id);
+
+        if (!deleted)
+        {
+            return NotFound(new { message = $"job application with id {id} not found" });
+        }
+
+        return Ok(new { message = $"job application with id {id} is now deleted" });
     }
 }

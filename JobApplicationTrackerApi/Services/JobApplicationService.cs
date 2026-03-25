@@ -126,8 +126,18 @@ public class JobApplicationService : IJobApplicationService
         };
     }
 
-    public Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var jobApplication = await _context.JobApplications.FindAsync(id);
+
+        if (jobApplication == null)
+        {
+            return false;
+        }
+
+        _context.JobApplications.Remove(jobApplication);
+        await _context.SaveChangesAsync();
+
+        return true;
     }
 }
