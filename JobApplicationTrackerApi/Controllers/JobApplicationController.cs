@@ -26,7 +26,9 @@ public class JobApplicationsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<JobApplicationResponseDto>>> GetAll([FromQuery] JobApplicationQueryDto queryDto)
     {
-        throw new NotImplementedException();
+        var jobApplications = await _jobApplicationService.GetAllAsync(queryDto);
+
+        return Ok(jobApplications);
     }
 
     [HttpGet("{id}")]

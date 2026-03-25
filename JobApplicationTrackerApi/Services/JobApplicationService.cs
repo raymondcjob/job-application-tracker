@@ -43,9 +43,21 @@ public class JobApplicationService : IJobApplicationService
 
     
 
-    public Task<IEnumerable<JobApplicationResponseDto>> GetAllAsync(JobApplicationQueryDto queryDto)
+    public async Task<IEnumerable<JobApplicationResponseDto>> GetAllAsync(JobApplicationQueryDto queryDto)
     {
-        throw new NotImplementedException();
+        var jobApplications = await _context.JobApplications
+            .Select(jobApplication => new JobApplicationResponseDto
+            {
+                Id = jobApplication.Id,
+                CompanyName = jobApplication.CompanyName,
+                Position = jobApplication.Position,
+                Status = jobApplication.Status,
+                DateApplied = jobApplication.DateApplied,
+                Notes = jobApplication.Notes
+            })
+            .ToListAsync();
+
+        return jobApplications;
     }
 
     public Task<JobApplicationResponseDto?> GetByIdAsync(int id)
