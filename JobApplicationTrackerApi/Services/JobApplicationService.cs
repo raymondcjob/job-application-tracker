@@ -98,9 +98,32 @@ public class JobApplicationService : IJobApplicationService
         return jobApplication;
     }
 
-    public Task<JobApplicationResponseDto?> UpdateAsync(int id, UpdateJobApplicationDto dto)
+    public async Task<JobApplicationResponseDto?> UpdateAsync(int id, UpdateJobApplicationDto dto)
     {
-        throw new NotImplementedException();
+        var jobApplication = await _context.JobApplications.FindAsync(id);
+
+        if (jobApplication == null)
+        {
+            return null;
+        }
+
+        jobApplication.CompanyName = dto.CompanyName;
+        jobApplication.Position = dto.Position;
+        jobApplication.Status = dto.Status;
+        jobApplication.DateApplied = dto.DateApplied;
+        jobApplication.Notes = dto.Notes;
+
+        await _context.SaveChangesAsync();
+
+        return new JobApplicationResponseDto
+        {
+            Id = jobApplication.Id,
+            CompanyName = jobApplication.CompanyName,
+            Position = jobApplication.Position,
+            Status = jobApplication.Status,
+            DateApplied = jobApplication.DateApplied,
+            Notes = jobApplication.Notes
+        };
     }
 
     public Task<bool> DeleteAsync(int id)

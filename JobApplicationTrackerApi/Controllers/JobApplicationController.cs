@@ -47,7 +47,14 @@ public class JobApplicationsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<JobApplicationResponseDto>> Update(int id, UpdateJobApplicationDto dto)
     {
-        throw new NotImplementedException();
+        var updatedJobApplication = await _jobApplicationService.UpdateAsync(id, dto);
+
+        if (updatedJobApplication == null)
+        {
+            return NotFound(new { message = $"job application with id {id} not found" });
+        }
+
+        return Ok(updatedJobApplication);
     }
 
     [HttpDelete("{id}")]
