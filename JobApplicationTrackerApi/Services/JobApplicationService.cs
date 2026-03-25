@@ -48,7 +48,17 @@ public class JobApplicationService : IJobApplicationService
         var pageNumber = queryDto.PageNumber < 1 ? 1 : queryDto.PageNumber;
         var pageSize = queryDto.PageSize < 1 ? 10 : queryDto.PageSize;
 
-        var jobApplications = await _context.JobApplications
+        IQueryable<JobApplication> jobApplicationsQuery = _context.JobApplications;
+
+        if (!string.IsNullOrWhiteSpace(queryDto.CompanyName))
+        {
+            var companyName = queryDto.CompanyName.Trim().ToLower();
+
+            jobApplicationsQuery = jobApplicationsQuery
+                .Where(jobApplication => jobApplication.CompanyName.ToLower().Contains(companyName));
+        }
+
+        var jobApplications = await jobApplicationsQuery
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(jobApplication => new JobApplicationResponseDto
