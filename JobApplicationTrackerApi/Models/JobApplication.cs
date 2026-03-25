@@ -10,7 +10,7 @@ public class JobApplication
 
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Applied;
 
-    public DateTime DateApplied { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
+    public DateOnly DateApplied { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
 
     public string? Notes { get; set; }
 
