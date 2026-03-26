@@ -1,24 +1,24 @@
 # Job Application Tracker API
 
-A secure and scalable RESTful API for managing job applications, built with ASP.NET Core, Entity Framework Core, and PostgreSQL. The API supports authentication, user-specific data access, and advanced querying features such as pagination, search, and sorting.
+Backend system designed to manage job application workflows, including user authentication, secure data access, and structured querying features such as pagination, search, and sorting.
 
 ---
 
 ## Overview
 
-This project is designed to simulate a real-world backend system where users can track their job applications. It demonstrates best practices in API design, authentication, and data handling.
+This project demonstrates the development of a secure and scalable RESTful API using ASP.NET Core with JSON-based request and response handling. It simulates a real-world system where users manage and track application data while ensuring proper access control and data isolation.
 
 ---
 
 ## Features
 
-* User registration and login (JWT authentication)
-* Secure endpoints with authorization
-* Create, read, update, and delete job applications
-* Pagination support
-* Search by company name
-* Sort by application date
-* User-specific data isolation
+- User registration and login (JWT authentication)
+- Secure endpoints with authorization
+- Create, read, update, and delete job applications
+- Pagination support
+- Search by company name
+- Sort by application date
+- User-specific data isolation
 
 ---
 
@@ -26,75 +26,51 @@ This project is designed to simulate a real-world backend system where users can
 
 ### Backend
 
-* ASP.NET Core Web API (.NET 10)
-* Entity Framework Core
-* PostgreSQL
+- C#
+- ASP.NET Core Web API (.NET 10)
+- Entity Framework Core
+- PostgreSQL
 
 ### Authentication
 
-* JSON Web Tokens (JWT)
+- JSON Web Tokens (JWT)
 
-### API Documentation
+### Tools
 
-* Swagger (Swashbuckle)
+- Swagger (API testing)
+- Git
+
+---
+
+## Technical Skills
+
+This project demonstrates:
+
+- Writing, modifying, and testing software code
+- Developing RESTful APIs using JSON-based communication
+- Implementing secure system design with authentication and data access control
+- Managing system workflows and data usage
+- Ensuring reliability through structured querying and validation
+
+---
+
+## Testing & Validation
+
+- API endpoints tested using Postman and Swagger
+- Authentication and authorization flows validated
+- Query parameters tested for pagination, filtering, and sorting
+- Invalid inputs handled to maintain system stability
 
 ---
 
 ## Project Structure
 
-* **Controllers** – API endpoints
-* **Services** – business logic
-* **Interfaces** – service contracts
-* **DTOs** – data transfer objects
-* **Models** – database entities
-* **Data** – database context
-
----
-
-## Getting Started
-
-### Prerequisites
-
-* .NET SDK (version 10 or later)
-* PostgreSQL
-* Node.js (optional, if testing with frontend later)
-
----
-
-### Setup
-
-1. Clone the repository:
-
-```
-git clone <https://github.com/raymondcjob/job-application-tracker>
-cd JobApplicationTrackerApi
-```
-
-2. Configure the database connection in `appsettings.json`:
-
-```json
-"ConnectionStrings": {
-  "DefaultConnection": "Host=localhost;Port=5432;Database=jobapplicationtrackerdb;Username=postgres;Password=yourpassword"
-}
-```
-
-3. Apply migrations:
-
-```
-dotnet ef database update
-```
-
-4. Run the application:
-
-```
-dotnet run
-```
-
-5. Open Swagger:
-
-```
-http://localhost:5280/swagger
-```
+- Controllers – API endpoints
+- Services – business logic
+- Interfaces – service contracts
+- DTOs – data transfer objects
+- Models – database entities
+- Data – database context
 
 ---
 
@@ -104,7 +80,7 @@ This API uses JWT for authentication.
 
 ### Register
 
-`POST /api/Auth/register`
+POST /api/Auth/register
 
 ```json
 {
@@ -115,7 +91,7 @@ This API uses JWT for authentication.
 
 ### Login
 
-`POST /api/Auth/login`
+POST /api/Auth/login
 
 ```json
 {
@@ -126,9 +102,7 @@ This API uses JWT for authentication.
 
 ### Using the Token
 
-Click **Authorize** in Swagger and enter:
-
-```
+```text
 Bearer your_token_here
 ```
 
@@ -138,22 +112,22 @@ Bearer your_token_here
 
 ### Job Applications
 
-* `GET /api/JobApplications`
-* `GET /api/JobApplications/{id}`
-* `POST /api/JobApplications`
-* `PUT /api/JobApplications/{id}`
-* `DELETE /api/JobApplications/{id}`
+- GET /api/JobApplications
+- GET /api/JobApplications/{id}
+- POST /api/JobApplications
+- PUT /api/JobApplications/{id}
+- DELETE /api/JobApplications/{id}
 
 ### Query Parameters
 
-* `pageNumber`
-* `pageSize`
-* `companyName`
-* `sortByDateDescending`
+- pageNumber
+- pageSize
+- companyName
+- sortByDateDescending
 
 Example:
 
-```
+```text
 /api/JobApplications?pageNumber=1&pageSize=5&companyName=micro&sortByDateDescending=true
 ```
 
@@ -161,27 +135,26 @@ Example:
 
 ## Key Concepts Demonstrated
 
-* RESTful API design
-* Dependency injection
-* Separation of concerns
-* DTO pattern
-* Authentication and authorization with JWT
-* Database integration with Entity Framework Core
-* Query optimization with pagination and filtering
+- RESTful API design
+- JSON-based communication
+- Dependency injection
+- Separation of concerns
+- DTO pattern
+- Authentication and authorization with JWT
+- Database integration with Entity Framework Core
+- Query optimization with pagination and filtering
 
 ---
 
 ## Future Improvements
 
-* Input validation and error handling improvements
-* Refresh token implementation
-* Role-based authorization
-* Unit and integration testing
+- Enhanced input validation and global error handling
+- Refresh token implementation
+- Role-based authorization
+- Unit and integration testing
 
 ---
 
 ## Author
 
 Raymond Chau
-
----
