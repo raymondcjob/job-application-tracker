@@ -31,6 +31,13 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
     {
-        throw new NotImplementedException();
+        var result = await _authService.LoginAsync(dto);
+
+        if (result == null)
+        {
+            return Unauthorized(new { message = "invalid email or password" });
+        }
+
+        return Ok(result);
     }
 }
