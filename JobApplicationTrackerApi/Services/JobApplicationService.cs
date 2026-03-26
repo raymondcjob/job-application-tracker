@@ -15,7 +15,7 @@ public class JobApplicationService : IJobApplicationService
         _context = context;
     }
 
-    public async Task<JobApplicationResponseDto> CreateAsync(CreateJobApplicationDto dto)
+    public async Task<JobApplicationResponseDto> CreateAsync(int userId, CreateJobApplicationDto dto)
     {
         var jobApplication = new JobApplication
         {
@@ -24,7 +24,7 @@ public class JobApplicationService : IJobApplicationService
             Status = dto.Status,
             DateApplied = dto.DateApplied,
             Notes = dto.Notes,
-            UserId = 1
+            UserId = userId
         };
 
         _context.JobApplications.Add(jobApplication);
@@ -43,12 +43,13 @@ public class JobApplicationService : IJobApplicationService
 
     
 
-    public async Task<IEnumerable<JobApplicationResponseDto>> GetAllAsync(JobApplicationQueryDto queryDto)
+    public async Task<IEnumerable<JobApplicationResponseDto>> GetAllAsync(int userId, JobApplicationQueryDto queryDto)
     {
         var pageNumber = queryDto.PageNumber < 1 ? 1 : queryDto.PageNumber;
         var pageSize = queryDto.PageSize < 1 ? 10 : queryDto.PageSize;
 
-        IQueryable<JobApplication> jobApplicationsQuery = _context.JobApplications;
+        IQueryable<JobApplication> jobApplicationsQuery = _context.JobApplications
+            .Where(jobApplications => jobApplications.UserId == userId);
 
         if (!string.IsNullOrWhiteSpace(queryDto.CompanyName))
         {
@@ -80,10 +81,10 @@ public class JobApplicationService : IJobApplicationService
         return jobApplications;
     }
 
-    public async Task<JobApplicationResponseDto?> GetByIdAsync(int id)
+    public async Task<JobApplicationResponseDto?> GetByIdAsync(int userId, int id)
     {
         var jobApplication = await _context.JobApplications
-            .Where(jobApplication => jobApplication.Id == id)
+            .Where(jobApplication => jobApplication.UserId == userId && jobApplication.Id == id)
             .Select(jobApplication => new JobApplicationResponseDto
             {
                 Id = jobApplication.Id,
@@ -98,9 +99,10 @@ public class JobApplicationService : IJobApplicationService
         return jobApplication;
     }
 
-    public async Task<JobApplicationResponseDto?> UpdateAsync(int id, UpdateJobApplicationDto dto)
+    public async Task<JobApplicationResponseDto?> UpdateAsync(int userId, int id, UpdateJobApplicationDto dto)
     {
-        var jobApplication = await _context.JobApplications.FindAsync(id);
+        var jobApplication = await _context.JobApplications
+            .FirstOrDefaultAsync(jobApplication => jobApplication.UserId == userId && jobApplication.Id == id);
 
         if (jobApplication == null)
         {
@@ -126,9 +128,10 @@ public class JobApplicationService : IJobApplicationService
         };
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int userId, int id)
     {
-        var jobApplication = await _context.JobApplications.FindAsync(id);
+        var jobApplication = await _context.JobApplications
+            .FirstOrDefaultAsync(jobApplication => jobApplication.UserId == userId && jobApplication.Id == id);
 
         if (jobApplication == null)
         {

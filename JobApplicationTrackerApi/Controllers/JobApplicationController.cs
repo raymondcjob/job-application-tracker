@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using JobApplicationTrackerApi.DTOs;
 using JobApplicationTrackerApi.Interfaces;
 
@@ -6,6 +8,7 @@ namespace JobApplicationTrackerApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class JobApplicationsController : ControllerBase
 {
     private readonly IJobApplicationService _jobApplicationService;
@@ -18,7 +21,13 @@ public class JobApplicationsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<JobApplicationResponseDto>> Create(CreateJobApplicationDto dto)
     {
-        var createdJobApplication = await _jobApplicationService.CreateAsync(dto);
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new {message = "invalid user token"});
+        }
+
+        var createdJobApplication = await _jobApplicationService.CreateAsync(userId.Value, dto);
 
         return CreatedAtAction(nameof(GetById), new { id = createdJobApplication.Id }, createdJobApplication);
     }
@@ -26,7 +35,13 @@ public class JobApplicationsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<JobApplicationResponseDto>>> GetAll([FromQuery] JobApplicationQueryDto queryDto)
     {
-        var jobApplications = await _jobApplicationService.GetAllAsync(queryDto);
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new {message = "invalid user token"});
+        }
+
+        var jobApplications = await _jobApplicationService.GetAllAsync(userId.Value, queryDto);
 
         return Ok(jobApplications);
     }
@@ -34,7 +49,13 @@ public class JobApplicationsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<JobApplicationResponseDto>> GetById(int id)
     {
-        var jobApplication = await _jobApplicationService.GetByIdAsync(id);
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new {message = "invalid user token"});
+        }
+
+        var jobApplication = await _jobApplicationService.GetByIdAsync(userId.Value, id);
 
         if (jobApplication == null)
         {
@@ -47,7 +68,13 @@ public class JobApplicationsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<JobApplicationResponseDto>> Update(int id, UpdateJobApplicationDto dto)
     {
-        var updatedJobApplication = await _jobApplicationService.UpdateAsync(id, dto);
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new {message = "invalid user token"});
+        }
+
+        var updatedJobApplication = await _jobApplicationService.UpdateAsync(userId.Value, id, dto);
 
         if (updatedJobApplication == null)
         {
@@ -60,7 +87,13 @@ public class JobApplicationsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        var deleted = await _jobApplicationService.DeleteAsync(id);
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new {message = "invalid user token"});
+        }
+
+        var deleted = await _jobApplicationService.DeleteAsync(userId.Value, id);
 
         if (!deleted)
         {
@@ -68,5 +101,17 @@ public class JobApplicationsController : ControllerBase
         }
 
         return Ok(new { message = $"job application with id {id} is now deleted" });
+    }
+
+    private int? GetUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (int.TryParse(userIdClaim, out var userId))
+        {
+            return userId;
+        }
+
+        return null;
     }
 }
