@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using JobApplicationTrackerApi.DTOs;
 using JobApplicationTrackerApi.Interfaces;
 
@@ -39,5 +41,21 @@ public class AuthController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<ActionResult> ChangePassword(ChangePasswordDto dto)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "invalid user token" });
+        }
+
+        await _authService.ChangePasswordAsync(userId, dto);
+
+        return Ok(new { message = "password updated successfully" });
     }
 }

@@ -46,6 +46,20 @@ public class JobApplicationsController : ControllerBase
         return Ok(jobApplications);
     }
 
+    [HttpGet("stats")]
+    public async Task<ActionResult<JobApplicationStatsDto>> GetStats()
+    {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new {message = "invalid user token"});
+        }
+
+        var stats = await _jobApplicationService.GetStatsAsync(userId.Value);
+
+        return Ok(stats);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<JobApplicationResponseDto>> GetById(int id)
     {

@@ -1,8 +1,8 @@
 namespace JobApplicationTrackerApi.DTOs;
 
-public class AuthResponseDto
+public class UserSummaryDto
 {
-    public string Token { get; set; } = string.Empty;
+    public int Id { get; set; }
 
     public string Identifier { get; set; } = string.Empty;
 

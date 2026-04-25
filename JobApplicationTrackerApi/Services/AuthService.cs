@@ -9,6 +9,7 @@ using JobApplicationTrackerApi.Data;
 using JobApplicationTrackerApi.DTOs;
 using JobApplicationTrackerApi.Interfaces;
 using JobApplicationTrackerApi.Models;
+using JobApplicationTrackerApi.Utilities;
 
 namespace JobApplicationTrackerApi.Services;
 
@@ -25,10 +26,10 @@ public class AuthService : IAuthService
     
     public async Task<AuthResponseDto?> RegisterAsync(RegisterDto dto)
     {
-        var email = dto.Email.Trim().ToLower();
+        var identifier = dto.EmailOrUsername.Trim().ToLower();
 
         var existingUser = await _context.Users
-            .FirstOrDefaultAsync(user => user.Email.ToLower() == email);
+            .FirstOrDefaultAsync(user => user.Identifier.ToLower() == identifier);
 
         if (existingUser != null)
         {
@@ -37,8 +38,9 @@ public class AuthService : IAuthService
 
         var user = new ApplicationUser
         {
-            Email = email,
-            PasswordHash = HashPassword(dto.Password)
+            Identifier = identifier,
+            PasswordHash = PasswordHasher.Hash(dto.Password),
+            Role = UserRole.User
         };
 
         _context.Users.Add(user);
@@ -49,21 +51,28 @@ public class AuthService : IAuthService
         return new AuthResponseDto
         {
             Token = token,
-            Email = user.Email
+            Identifier = user.Identifier,
+            Role = user.Role.ToString(),
+            RequiresPasswordChange = user.RequiresPasswordChange
         };
     }
 
     public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
     {
-        var email = dto.Email.Trim().ToLower();
-        var passwordHash = HashPassword(dto.Password);
+        var identifier = dto.EmailOrUsername.Trim().ToLower();
+        var passwordHash = PasswordHasher.Hash(dto.Password);
 
         var user = await _context.Users
-            .FirstOrDefaultAsync(user => user.Email.ToLower() == email && user.PasswordHash == passwordHash);
+            .FirstOrDefaultAsync(user => user.Identifier.ToLower() == identifier && user.PasswordHash == passwordHash);
 
         if (user == null)
         {
             return null;
+        }
+
+        if (user.Role == UserRole.User)
+        {
+            await ArchiveStaleApplicationsAsync(user.Id);
         }
 
         var token = GenerateJwtToken(user);
@@ -71,17 +80,25 @@ public class AuthService : IAuthService
         return new AuthResponseDto
         {
             Token = token,
-            Email = user.Email
+            Identifier = user.Identifier,
+            Role = user.Role.ToString(),
+            RequiresPasswordChange = user.RequiresPasswordChange
         };
     }
 
-    private static string HashPassword(string password)
+    public async Task ChangePasswordAsync(int userId, ChangePasswordDto dto)
     {
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(password);
-        var hashBytes = sha256.ComputeHash(bytes);
+        var user = await _context.Users.FirstOrDefaultAsync(existingUser => existingUser.Id == userId);
 
-        return Convert.ToBase64String(hashBytes);
+        if (user == null)
+        {
+            throw new InvalidOperationException("user not found");
+        }
+
+        user.PasswordHash = PasswordHasher.Hash(dto.NewPassword);
+        user.RequiresPasswordChange = false;
+
+        await _context.SaveChangesAsync();
     }
 
     private string GenerateJwtToken(ApplicationUser user)
@@ -95,7 +112,8 @@ public class AuthService : IAuthService
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email)
+            new Claim(ClaimTypes.Name, user.Identifier),
+            new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
@@ -111,4 +129,27 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    private async Task ArchiveStaleApplicationsAsync(int userId)
+    {
+        var archiveCutoff = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-14));
+
+        var staleApplications = await _context.JobApplications
+            .Where(jobApplication =>
+                jobApplication.UserId == userId &&
+                jobApplication.Status == ApplicationStatus.Applied &&
+                jobApplication.DateApplied <= archiveCutoff)
+            .ToListAsync();
+
+        if (staleApplications.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var jobApplication in staleApplications)
+        {
+            jobApplication.Status = ApplicationStatus.Archived;
+        }
+
+        await _context.SaveChangesAsync();
+    }
 }

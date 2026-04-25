@@ -15,6 +15,30 @@ public class JobApplicationService : IJobApplicationService
         _context = context;
     }
 
+    public async Task ArchiveStaleApplicationsAsync(int userId, DateOnly currentDate)
+    {
+        var archiveCutoff = currentDate.AddDays(-14);
+
+        var staleApplications = await _context.JobApplications
+            .Where(jobApplication =>
+                jobApplication.UserId == userId &&
+                jobApplication.Status == ApplicationStatus.Applied &&
+                jobApplication.DateApplied <= archiveCutoff)
+            .ToListAsync();
+
+        if (staleApplications.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var jobApplication in staleApplications)
+        {
+            jobApplication.Status = ApplicationStatus.Archived;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<JobApplicationResponseDto> CreateAsync(int userId, CreateJobApplicationDto dto)
     {
         var jobApplication = new JobApplication
@@ -79,6 +103,23 @@ public class JobApplicationService : IJobApplicationService
             .ToListAsync();
 
         return jobApplications;
+    }
+
+    public async Task<JobApplicationStatsDto> GetStatsAsync(int userId)
+    {
+        var activeApplications = await _context.JobApplications.CountAsync(jobApplication =>
+            jobApplication.UserId == userId &&
+            (jobApplication.Status == ApplicationStatus.Interview || jobApplication.Status == ApplicationStatus.Offer));
+
+        var archivedApplications = await _context.JobApplications.CountAsync(jobApplication =>
+            jobApplication.UserId == userId &&
+            jobApplication.Status == ApplicationStatus.Archived);
+
+        return new JobApplicationStatsDto
+        {
+            ActiveApplications = activeApplications,
+            ArchivedApplications = archivedApplications
+        };
     }
 
     public async Task<JobApplicationResponseDto?> GetByIdAsync(int userId, int id)
